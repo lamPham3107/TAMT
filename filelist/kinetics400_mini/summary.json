@@ -3,7 +3,7 @@
   "machine_folders": [
     {
       "machine_id": 1,
-      "folder_path": "kinetics400_4machines_with_novel\\machine_01",
+      "folder_path": "filelist\\kinetics400_mini\\machine_01",
       "training_videos": 799,
       "validation_videos": 283,
       "novel_videos": 317,
@@ -11,7 +11,7 @@
     },
     {
       "machine_id": 2,
-      "folder_path": "kinetics400_4machines_with_novel\\machine_02",
+      "folder_path": "filelist\\kinetics400_mini\\machine_02",
       "training_videos": 751,
       "validation_videos": 272,
       "novel_videos": 255,
@@ -19,7 +19,7 @@
     },
     {
       "machine_id": 3,
-      "folder_path": "kinetics400_4machines_with_novel\\machine_03",
+      "folder_path": "filelist\\kinetics400_mini\\machine_03",
       "training_videos": 823,
       "validation_videos": 274,
       "novel_videos": 237,
@@ -27,7 +27,7 @@
     },
     {
       "machine_id": 4,
-      "folder_path": "kinetics400_4machines_with_novel\\machine_04",
+      "folder_path": "filelist\\kinetics400_mini\\machine_04",
       "training_videos": 958,
       "validation_videos": 287,
       "novel_videos": 284,

@@ -78,7 +78,8 @@ def create_balanced_chunks(videos_by_label, chunks_per_machine=25, dataset_name=
                 random.shuffle(shuffled_videos)
                 
                 for video in shuffled_videos:
-                    kaggle_path = f"/kaggle/input/data-bigdata/data_down/{dataset_name}/{video}"
+                    # Format đường dẫn cho Kaggle: /kaggle/input/kinetics400-mini/kinetics400_mini/
+                    kaggle_path = f"/kaggle/input/kinetics400-mini/kinetics400_mini/{video}"
                     split_videos.append({
                         "kaggle_path": kaggle_path,
                         "label": label,
@@ -282,8 +283,8 @@ def create_base_val_novel_split(videos_by_label, output_dir, dataset_name, base_
             
             for video in videos:
                 # Format path for TAMT
-                # Giữ nguyên đường dẫn tương đối từ data_root
-                kaggle_path = f"/kaggle/input/data-bigdata/data_down/{dataset_name}/{video}"
+                # Đường dẫn đúng trên Kaggle: /kaggle/input/kinetics400-mini/kinetics400_mini/
+                kaggle_path = f"/kaggle/input/kinetics400-mini/kinetics400_mini/{video}"
                 image_names.append(kaggle_path)
                 image_labels.append(label_idx)
             
