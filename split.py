@@ -11,13 +11,16 @@ def collect_videos_by_label(data_root):
     """Thu thập videos theo label - Hỗ trợ cả .avi và .mp4"""
     videos_by_label = defaultdict(list)
     
-    for action_dir in Path(data_root).iterdir():
-        if action_dir.is_dir():
-            label = action_dir.name
-            # Hỗ trợ nhiều format: .avi (HMDB51), .mp4 (Kinetics400)
-            for video_file in list(action_dir.glob("*.avi")) + list(action_dir.glob("*.mp4")):
-                rel_path = video_file.relative_to(data_root).as_posix()
-                videos_by_label[label].append(rel_path)
+    # Duyệt đệ quy để lấy toàn bộ file video, giữ nguyên đường dẫn tương đối từ data_root
+    for video_file in Path(data_root).rglob("*.avi"):
+        rel_path = video_file.relative_to(data_root).as_posix()
+        # label là thư mục cha của video (ví dụ: train/abseiling)
+        label = str(Path(rel_path).parent)
+        videos_by_label[label].append(rel_path)
+    for video_file in Path(data_root).rglob("*.mp4"):
+        rel_path = video_file.relative_to(data_root).as_posix()
+        label = str(Path(rel_path).parent)
+        videos_by_label[label].append(rel_path)
     
     return videos_by_label
 
@@ -79,7 +82,7 @@ def create_balanced_chunks(videos_by_label, chunks_per_machine=25, dataset_name=
                 
                 for video in shuffled_videos:
                     # Format đường dẫn cho Kaggle: /kaggle/input/kinetics400-mini/kinetics400_mini/
-                    kaggle_path = f"/kaggle/input/kinetics400-mini/kinetics400_mini/{video}"
+                    kaggle_path = f"/kaggle/input/kinetics400-mini/kinetics400_mini/train/{video}"
                     split_videos.append({
                         "kaggle_path": kaggle_path,
                         "label": label,
@@ -284,7 +287,7 @@ def create_base_val_novel_split(videos_by_label, output_dir, dataset_name, base_
             for video in videos:
                 # Format path for TAMT
                 # Đường dẫn đúng trên Kaggle: /kaggle/input/kinetics400-mini/kinetics400_mini/
-                kaggle_path = f"/kaggle/input/kinetics400-mini/kinetics400_mini/{video}"
+                kaggle_path = f"/kaggle/input/kinetics400-mini/kinetics400_mini/train/{video}"
                 image_names.append(kaggle_path)
                 image_labels.append(label_idx)
             
