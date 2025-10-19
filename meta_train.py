@@ -241,7 +241,7 @@ if __name__ == '__main__':
     if params.dataset == 'Rareact':
         base_file = 'base.json'; val_file = 'val.json'; json_file_read = True; params.num_classes = 64
     elif params.dataset == 'kinetics400_mini':
-        base_file = 'preprocessed_base.json'; val_file = 'preprocessed_val.json'; json_file_read = True; params.num_classes = 200
+        base_file = 'base.json'; val_file = 'val.json'; json_file_read = True; params.num_classes = 200
     elif params.dataset == 'Rareact2':
         base_file = 'base.json'; val_file = 'val.json'; json_file_read = True; params.num_classes = 64
     elif params.dataset in ['diving48','d2iving48']:
