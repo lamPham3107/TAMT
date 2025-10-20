@@ -286,9 +286,9 @@ def create_base_val_novel_split(videos_by_label, output_dir, kaggle_dataset_name
             label_idx = label_to_idx[label]
             
             for video in videos:
-                # ⭐ Đường dẫn Kaggle đầy đủ với kinetics400 subfolder:
-                # /kaggle/input/kinetics400-mini/kinetics400_mini/kinetics400/train/abseiling/-WKCwDRp_jk.mp4
-                kaggle_path = f"/kaggle/input/{kaggle_dataset_name}/kinetics400_mini/kinetics400/train/{video}"
+                # ⭐ Đường dẫn Kaggle chuẩn:
+                # /kaggle/input/kinetics400-mini/kinetics400_mini/train/abseiling/-WKCwDRp_jk.mp4
+                kaggle_path = f"/kaggle/input/{kaggle_dataset_name}/kinetics400_mini/train/{video}"
                 image_names.append(kaggle_path)
                 image_labels.append(label_idx)
             
