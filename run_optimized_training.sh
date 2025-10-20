@@ -6,12 +6,15 @@ echo "=========================================="
 echo "META-TRAINING VỚI HYPERPARAMETERS ĐÃ FIX"
 echo "=========================================="
 
+# CD vào thư mục TAMT trước
+cd /kaggle/working/TAMT
+
 # OPTION 1: CHỈ ĐỔI HYPERPARAMETERS (KHUYẾN NGHỊ THỬ TRƯỚC)
 echo ""
 echo "🚀 OPTION 1: Chỉ đổi hyperparameters (không sửa code)"
 echo ""
 
-python meta_train.py \
+python3 meta_train.py \
     --dataset kinetics400_mini \
     --data_path /kaggle/working/TAMT/filelist/kinetics400_mini/machine_01 \
     --model VideoMAES \
@@ -42,10 +45,10 @@ python meta_train.py \
 # echo "🚀 OPTION 2: Với freeze backbone (cần chạy fix_freeze_backbone.py trước)"
 # echo ""
 # 
-python fix_freeze_backbone.py
+python3 fix_freeze_backbone.py
 cp meta_train_with_freeze.py meta_train.py
 
-python meta_train.py \
+python3 meta_train.py \
     --freeze_backbone_epochs 3 \
     --dataset kinetics400_mini \
     --data_path /kaggle/working/TAMT/filelist/kinetics400_mini/machine_01 \
