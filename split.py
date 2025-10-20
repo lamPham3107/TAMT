@@ -286,12 +286,9 @@ def create_base_val_novel_split(videos_by_label, output_dir, kaggle_dataset_name
             label_idx = label_to_idx[label]
             
             for video in videos:
-                # ⭐ Format path giống như file val.json cũ:
-                # /kaggle/input/k400bigdata/val/video_0.pt
-                # Chuyển từ: abseiling/v_abseiling_01.pt → val/video_X.pt
-                filename = Path(video).stem  # Lấy tên file không có extension
-                # Đơn giản hóa: giữ nguyên relative path
-                kaggle_path = f"/kaggle/input/{kaggle_dataset_name}/train/{video}"
+                # ⭐ Đường dẫn Kaggle đầy đủ với kinetics400 subfolder:
+                # /kaggle/input/kinetics400-mini/kinetics400_mini/kinetics400/train/abseiling/-WKCwDRp_jk.mp4
+                kaggle_path = f"/kaggle/input/{kaggle_dataset_name}/kinetics400_mini/kinetics400/train/{video}"
                 image_names.append(kaggle_path)
                 image_labels.append(label_idx)
             
