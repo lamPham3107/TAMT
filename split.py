@@ -24,21 +24,13 @@ def collect_videos_by_label(data_root):
     
     return videos_by_label
 
-def create_balanced_chunks(videos_by_label, chunks_per_machine=25, dataset_name="hmdb51_org_2", split_by_label=False):
-    """Tạo chunks balanced cho 4 machines - MỖI MACHINE CÓ BASE/VAL/NOVEL
-    
-    Chiến lược mới:
-    - Chia labels thành 4 nhóm (mỗi máy 1 nhóm riêng)
-    - Mỗi machine: 60% base + 20% val + 20% novel classes
-    """
-    
+def create_balanced_chunks(videos_by_label, chunks_per_machine=25, kaggle_dataset_name="kinetics400-mini"):
+   
     # Create label mapping
     all_labels = sorted(videos_by_label.keys())
     label_to_idx = {label: idx for idx, label in enumerate(all_labels)}
     
     machine_groups = []
-    
-    print(f"🏷️  SPLIT MODE: Mỗi máy có BASE/VAL/NOVEL từ nhóm labels riêng")
     
     # Chia labels thành 4 nhóm
     labels_per_machine = len(all_labels) // 4
@@ -66,10 +58,7 @@ def create_balanced_chunks(videos_by_label, chunks_per_machine=25, dataset_name=
         val_labels = sorted(shuffled_machine_labels[n_base:n_base + n_val])
         novel_labels = sorted(shuffled_machine_labels[n_base + n_val:])
         
-        print(f"\n   Machine {machine_id+1}: Total {len(machine_labels)} labels")
-        print(f"      Base: {len(base_labels)} classes ({len(base_labels)/n_labels*100:.1f}%)")
-        print(f"      Val: {len(val_labels)} classes ({len(val_labels)/n_labels*100:.1f}%)")
-        print(f"      Novel: {len(novel_labels)} classes ({len(novel_labels)/n_labels*100:.1f}%)")
+        print(f"   Machine {machine_id+1}: {len(base_labels)} base / {len(val_labels)} val / {len(novel_labels)} novel")
         
         # Collect videos cho từng split
         def collect_split_videos(split_labels, split_name):
@@ -93,8 +82,6 @@ def create_balanced_chunks(videos_by_label, chunks_per_machine=25, dataset_name=
         base_videos = collect_split_videos(base_labels, "base")
         val_videos = collect_split_videos(val_labels, "val")
         novel_videos = collect_split_videos(novel_labels, "novel")
-        
-        print(f"      Videos: {len(base_videos)} base + {len(val_videos)} val + {len(novel_videos)} novel")
         
         # Tạo 1 chunk chứa tất cả data của machine này
         machine_chunks = [{
@@ -205,9 +192,7 @@ def save_machine_folders(machine_groups, label_to_idx, output_dir="./my_chunks")
             "unique_labels": len(set(all_base_labels + all_val_labels + all_novel_labels))
         })
         
-        print(f"✅ Machine {machine_id}: {len(all_base_names)} base + {len(all_val_names)} val + {len(all_novel_names)} novel")
-        print(f"   📁 Folder: {machine_folder}")
-        print(f"   🏷️  Labels: {len(set(all_base_labels + all_val_labels + all_novel_labels))}")
+        print(f"✅ Machine {machine_id}: {len(all_base_names)} train / {len(all_val_names)} val / {len(all_novel_names)} test videos")
     
     # Save overall summary
     summary = {
@@ -254,10 +239,7 @@ def create_base_val_novel_split(videos_by_label, output_dir, kaggle_dataset_name
     val_labels = sorted(shuffled_labels[n_base:n_base + n_val])
     novel_labels = sorted(shuffled_labels[n_base + n_val:])
     
-    print(f"\n📊 Split Strategy:")
-    print(f"   Base: {len(base_labels)} classes ({len(base_labels)/n_labels*100:.1f}%)")
-    print(f"   Val: {len(val_labels)} classes ({len(val_labels)/n_labels*100:.1f}%)")
-    print(f"   Novel: {len(novel_labels)} classes ({len(novel_labels)/n_labels*100:.1f}%)")
+    print(f"Split: {len(base_labels)} base / {len(val_labels)} val / {len(novel_labels)} novel classes")
     
     # Create output directory
     output_path = Path(output_dir)
@@ -279,20 +261,14 @@ def create_base_val_novel_split(videos_by_label, output_dir, kaggle_dataset_name
         image_names = []
         image_labels = []
         
-        print(f"\n📁 Processing {split_name} split ({len(split_labels)} classes)...")
-        
         for label in split_labels:
             videos = videos_by_label[label]
             label_idx = label_to_idx[label]
             
             for video in videos:
-                # ⭐ Đường dẫn Kaggle chuẩn:
-                # /kaggle/input/kinetics400-mini/kinetics400_mini/train/abseiling/-WKCwDRp_jk.mp4
                 kaggle_path = f"/kaggle/input/{kaggle_dataset_name}/kinetics400_mini/train/{video}"
                 image_names.append(kaggle_path)
                 image_labels.append(label_idx)
-            
-            print(f"   ✅ {label}: {len(videos)} videos (label={label_idx})")
         
         # Save JSON file
         split_data = {
@@ -310,8 +286,7 @@ def create_base_val_novel_split(videos_by_label, output_dir, kaggle_dataset_name
             "avg_videos_per_class": len(image_names) / len(split_labels) if split_labels else 0
         }
         
-        print(f"   💾 Saved: {output_file}")
-        print(f"   📊 Total: {len(image_names)} videos, {len(split_labels)} classes")
+        print(f"   Saved: {split_name}.json ({len(image_names)} videos, {len(split_labels)} classes)")
     
     # Save class mapping
     class_mapping = {
@@ -330,11 +305,7 @@ def create_base_val_novel_split(videos_by_label, output_dir, kaggle_dataset_name
         with open(output_path / f"{split_name}_label_mapping.json", "w", encoding='utf-8') as f:
             json.dump(label_mapping, f, indent=2)
     
-    print(f"\n✅ Split completed!")
-    print(f"📁 Output directory: {output_dir}")
-    print(f"\n📊 Statistics:")
-    for split_name, stats in split_stats.items():
-        print(f"   {split_name.upper()}: {stats['classes']} classes, {stats['videos']} videos (avg {stats['avg_videos_per_class']:.1f} videos/class)")
+    print(f"\nOutput: {output_dir}")
     
     return split_stats
 
@@ -342,23 +313,34 @@ def main():
     if len(sys.argv) < 2:
         print("Usage: python split.py <DATA_ROOT> [OPTIONS]")
         print("\nOptions:")
-        print("  --output_dir DIR           Output directory (default: ./filelist)")
-        print("  --dataset_name NAME        Dataset name for Kaggle paths (default: auto-detect)")
-        print("  --base_ratio FLOAT         Ratio for base classes (default: 0.60)")
-        print("  --val_ratio FLOAT          Ratio for val classes (default: 0.20)")
-        print("\nExample:")
-        print('  python split.py "G:\\TLU\\BigData\\Data_time\\data_down\\kinetics400_mini\\train" --output_dir "./filelist/kinetics400_mini" --dataset_name "kinetics400-mini"')
+        print("  --mode [machines|split]    Mode: 'machines' for 4-machine split, 'split' for base/val/novel (default: machines)")
+        print("  --chunks_per_machine NUM   Chunks per machine (default: 25)")
+        print("  --output_dir DIR           Output directory (default: ./my_chunks)")
+        print("  --dataset_name NAME        Dataset name for Kaggle paths (default: kinetics400-mini)")
+        print("\nExamples:")
+        print('  # Chia thành 4 máy (mặc định):')
+        print('  python split.py "G:\\TLU\\BigData\\Data_time\\data_down\\kinetics400_mini\\train" --mode machines --output_dir "./kinetics400_mini_chunks"')
+        print('\n  # Tạo base/val/novel đơn giản:')
+        print('  python split.py "G:\\TLU\\BigData\\Data_time\\data_down\\kinetics400_mini\\train" --mode split --output_dir "./filelist/kinetics400_mini"')
         return
     
     data_root = sys.argv[1]
     
     # Default values
-    output_dir = "./filelist"
+    mode = "machines"  # Mặc định: chia 4 máy
+    chunks_per_machine = 25
+    output_dir = "./my_chunks"
     dataset_name = "kinetics400-mini"  # Default Kaggle dataset name
-    base_ratio = 0.60
-    val_ratio = 0.20
     
     # Parse args
+    if "--mode" in sys.argv:
+        idx = sys.argv.index("--mode") + 1
+        mode = sys.argv[idx]
+    
+    if "--chunks_per_machine" in sys.argv:
+        idx = sys.argv.index("--chunks_per_machine") + 1
+        chunks_per_machine = int(sys.argv[idx])
+    
     if "--output_dir" in sys.argv:
         idx = sys.argv.index("--output_dir") + 1
         output_dir = sys.argv[idx]
@@ -367,41 +349,49 @@ def main():
         idx = sys.argv.index("--dataset_name") + 1
         dataset_name = sys.argv[idx]
     
-    if "--base_ratio" in sys.argv:
-        idx = sys.argv.index("--base_ratio") + 1
-        base_ratio = float(sys.argv[idx])
-    
-    if "--val_ratio" in sys.argv:
-        idx = sys.argv.index("--val_ratio") + 1
-        val_ratio = float(sys.argv[idx])
-    
     # Set random seed for reproducible results
     random.seed(42)
     
-    print(f"🔍 Scanning videos in: {data_root}")
-    print(f"📦 Kaggle dataset name: {dataset_name}")
-    print(f"📊 Split ratio: Base {base_ratio*100:.0f}% / Val {val_ratio*100:.0f}% / Novel {(1-base_ratio-val_ratio)*100:.0f}%")
+    print(f"Scanning: {data_root}")
+    print(f"Mode: {mode.upper()}")
     
-    # Collect videos
     videos_by_label = collect_videos_by_label(data_root)
-    print(f"📊 Found {len(videos_by_label)} labels")
-    
     total_videos = sum(len(videos) for videos in videos_by_label.values())
-    print(f"📼 Total videos: {total_videos}")
+    print(f"Found: {len(videos_by_label)} classes, {total_videos} videos")
     
-    # Create base/val/novel split
-    print(f"\n🎬 Creating BASE/VAL/NOVEL split...")
-    split_stats = create_base_val_novel_split(videos_by_label, output_dir, dataset_name, base_ratio, val_ratio)
+    if mode == "machines":
+        print(f"\nCreating 4 machine folders...")
+        
+        # Create balanced chunks for machines
+        machine_groups, label_to_idx = create_balanced_chunks(videos_by_label, chunks_per_machine, dataset_name)
+        
+        machine_folders = save_machine_folders(machine_groups, label_to_idx, output_dir)
+        
+        print(f"\nOutput: {output_dir}")
+        
+        print(f"\n💡 Usage with meta_train.py:")
+        print(f"   python meta_train.py --dataset kinetics400 --data_path {output_dir}/machine_01")
+        print(f"   python meta_train.py --dataset kinetics400 --data_path {output_dir}/machine_02")
+        print(f"   python meta_train.py --dataset kinetics400 --data_path {output_dir}/machine_03")
+        print(f"   python meta_train.py --dataset kinetics400 --data_path {output_dir}/machine_04")
     
-    print(f"\n💡 Usage with meta_train.py:")
-    print(f"   python meta_train.py \\")
-    print(f"       --dataset kinetics400 \\")
-    print(f"       --data_path {output_dir} \\")
-    print(f"       --train_n_episode 300 \\")
-    print(f"       --val_n_episode 300 \\")
-    print(f"       --n_shot 5 \\")
-    print(f"       --num_classes {split_stats['base']['classes']} \\")
-    print(f"       --epoch 10")
+    elif mode == "split":
+        print(f"\nCreating base/val/novel split...")
+        split_stats = create_base_val_novel_split(videos_by_label, output_dir, dataset_name)
+        
+        print(f"\n💡 Usage with meta_train.py:")
+        print(f"   python meta_train.py \\")
+        print(f"       --dataset kinetics400 \\")
+        print(f"       --data_path {output_dir} \\")
+        print(f"       --train_n_episode 300 \\")
+        print(f"       --val_n_episode 300 \\")
+        print(f"       --n_shot 5 \\")
+        print(f"       --num_classes {split_stats['base']['classes']} \\")
+        print(f"       --epoch 10")
+    
+    else:
+        print(f"❌ Unknown mode: {mode}")
+        print(f"   Available modes: 'machines', 'split'")
 
 if __name__ == "__main__":
     main()
